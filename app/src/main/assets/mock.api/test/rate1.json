@@ -1,0 +1,20 @@
+{
+  "rates": [
+    {
+      "symbol": "EURUSD",
+      "price": 1.1295633917039094
+    },
+    {
+      "symbol": "GBPUSD",
+      "price": 1.3610611644102208
+    },
+    {
+      "symbol": "EURGBP",
+      "price": 0.8413844539040028
+    },
+    {
+      "symbol": "GBPCHF",
+      "price": 1.2403304287264911
+    }
+  ]
+}

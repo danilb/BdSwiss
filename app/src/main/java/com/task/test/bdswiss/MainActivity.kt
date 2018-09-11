@@ -7,14 +7,12 @@ import com.github.mikephil.charting.data.Entry
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import kotlinx.android.synthetic.main.activity_main.*
 import java.util.concurrent.TimeUnit
-import android.R.attr.entries
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.LineData
-
-
-
+import com.task.test.bdswiss.api.BDService
+import com.task.test.bdswiss.api.MockService
+import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -22,6 +20,11 @@ class MainActivity : AppCompatActivity() {
     val bdService by lazy {
         BDService.create()
     }
+
+    val mockService by lazy {
+        MockService.create(this)
+    }
+
 
     var disposable: Disposable? = null
     val entries = arrayListOf<Entry>()
@@ -35,8 +38,21 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         ratesButton.setOnClickListener {
-            getRates()
+            getMockRates()
         }
+    }
+
+    private fun getMockRates() {
+        disposable =
+                Observable.interval( 2, TimeUnit.SECONDS)
+                        .flatMap { mockService.getRates() }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { result ->
+                                    ratesText.text = result.toString()
+                                },
+                                { error -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show() }
+                        )
     }
 
     private fun getRates() {
@@ -49,8 +65,6 @@ class MainActivity : AppCompatActivity() {
                             time += 10
                             entries.add(Entry(time, result.rates.get(0).price.toFloat()))
 
-                            
-
                             chart.data = lineData
                             dataSet.notifyDataSetChanged()
                             lineData.notifyDataChanged()
@@ -59,7 +73,7 @@ class MainActivity : AppCompatActivity() {
 
                             ratesText.text = result.toString()
                         },
-                        { error -> Toast.makeText(this, error.message, Toast.LENGTH_SHORT).show() }
+                        { error -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show() }
                 )
 
     }

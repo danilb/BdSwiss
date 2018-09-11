@@ -1,5 +1,6 @@
-package com.task.test.bdswiss
+package com.task.test.bdswiss.api
 
+import com.task.test.bdswiss.models.RatesModel
 import io.reactivex.Observable
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
