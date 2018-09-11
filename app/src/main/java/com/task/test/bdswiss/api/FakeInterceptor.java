@@ -1,4 +1,4 @@
-package com.task.test.bdswiss;
+package com.task.test.bdswiss.api;
 
 import android.content.Context;
 import android.util.Log;
@@ -8,9 +8,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
@@ -30,17 +27,6 @@ public class FakeInterceptor implements Interceptor {
 
     public FakeInterceptor(Context context) {
         mContext = context;
-    }
-
-    /**
-     * Set content type for header
-     *
-     * @param contentType Content type
-     * @return FakeInterceptor
-     */
-    public FakeInterceptor setContentType(String contentType) {
-        mContentType = contentType;
-        return this;
     }
 
     @Override

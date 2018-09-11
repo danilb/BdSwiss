@@ -1,7 +1,6 @@
 package com.task.test.bdswiss.api
 
 import android.content.Context
-import com.task.test.bdswiss.FakeInterceptor
 import com.task.test.bdswiss.models.RatesModel
 
 import io.reactivex.Observable
