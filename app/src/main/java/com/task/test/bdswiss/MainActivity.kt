@@ -1,5 +1,6 @@
 package com.task.test.bdswiss
 
+import android.graphics.Color
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.view.Gravity
@@ -13,10 +14,12 @@ import io.reactivex.disposables.Disposable
 import java.util.concurrent.TimeUnit
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.task.test.bdswiss.api.BDService
 import com.task.test.bdswiss.api.MockService
 import com.task.test.bdswiss.models.Rate
 import kotlinx.android.synthetic.main.activity_main.*
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,13 +32,13 @@ class MainActivity : AppCompatActivity() {
         MockService.create(this)
     }
 
+    private var disposable: Disposable? = null
 
-    var disposable: Disposable? = null
     val entries = arrayListOf<Entry>()
     var time = 0f
-    val dataSet = LineDataSet(entries, "Label")
 
-    val lineData = LineData(dataSet)
+    private val rnd = Random()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,12 +49,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun getMockRates() {
         disposable =
-                Observable.interval( 2, TimeUnit.SECONDS)
+                Observable.interval(0, 10, TimeUnit.SECONDS)
                         .flatMap { mockService.getRates() }
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 { result ->
-                                    updateRateTable(result.rates)
+
+                                    time += 10
+                                    updateRates(result.rates)
+
                                 },
                                 { error -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show() }
                         )
@@ -59,30 +65,24 @@ class MainActivity : AppCompatActivity() {
 
     private fun getRates() {
         disposable =
-        Observable.interval( 0,5, TimeUnit.SECONDS)
-                .flatMap { bdService.getRates() }
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        { result ->
+                Observable.interval(0, 10, TimeUnit.SECONDS)
+                        .flatMap { bdService.getRates() }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                { result ->
 
-                            /*time += 10
-                            entries.add(Entry(time, result.rates.get(0).price.toFloat()))
-                            chart.data = lineData
-                            dataSet.notifyDataSetChanged()
-                            lineData.notifyDataChanged()
-                            chart.notifyDataSetChanged()
-                            chart.invalidate()*/
+                                    time += 10
+                                    updateRates(result.rates)
 
-                            updateRateTable(result.rates)
-                        },
-                        { error -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show() }
-                )
+                                },
+                                { error -> Toast.makeText(this, error.message, Toast.LENGTH_LONG).show() }
+                        )
 
     }
 
-    private fun updateRateTable(rates: List<Rate>){
+    private fun updateRates(rates: List<Rate>) {
 
-        prepareTable(rates)
+        prepareTableAndChart(rates)
 
         rates.forEachIndexed { index, rate ->
 
@@ -91,27 +91,66 @@ class MainActivity : AppCompatActivity() {
             val symbol = row.getChildAt(0) as TextView
             val price = row.getChildAt(1) as TextView
 
+            if (!price.text.isEmpty()) {
+                val prevPrice = price.text.toString().toDouble()
+                when (prevPrice < rate.price) {
+                    true -> { price.setBackgroundColor(Color.GREEN)}
+                    false -> { price.setBackgroundColor(Color.RED)}
+                }
+            }
+
             symbol.text = rate.symbol
-            price.text = rate.price.toString()
+            price.text = rate.price.toString().dropLast(5)
+
+            chart.data.getDataSetByIndex(index).addEntry(Entry(time, rate.price.toFloat()))
 
         }
+
+        chart.data.notifyDataChanged()
+        chart.notifyDataSetChanged()
+        chart.invalidate()
+
     }
 
-    private fun prepareTable(rates: List<Rate>) {
-        if (rateTable.childCount == 0) {
-            for (i in 0 until rates.size) {
-                val row = TableRow(this)
+    private fun prepareTableAndChart(rates: List<Rate>) {
 
-                val symbol = TextView(this)
-                val price = TextView(this)
+        if (rateTable.childCount == rates.size) return
 
-                symbol.gravity = Gravity.RIGHT
+        var lines = arrayListOf<LineDataSet>()
 
-                row.addView(symbol)
-                row.addView(price)
-                rateTable.addView(row)
-            }
+        for (i in 0 until rates.size) {
+
+            val rate = rates[i]
+            val row = TableRow(this)
+
+            val symbol = TextView(this)
+            val price = TextView(this)
+
+            symbol.gravity = Gravity.CENTER
+            price.gravity = Gravity.CENTER
+
+            price.setBackgroundColor(Color.GRAY)
+
+            row.addView(symbol)
+            row.addView(price)
+            rateTable.addView(row)
+
+            val entries= arrayListOf<Entry>()
+            entries.add(Entry(time, rate.price.toFloat()))
+
+            val line = LineDataSet(entries, rate.symbol)
+
+            line.color =
+                    Color.argb(255,
+                            rnd.nextInt(256),
+                            rnd.nextInt(256),
+                            rnd.nextInt(256))
+
+            lines.add(line)
+            chart.data = LineData(lines as List<ILineDataSet>?)
+
         }
+
     }
 
     override fun onPause() {
