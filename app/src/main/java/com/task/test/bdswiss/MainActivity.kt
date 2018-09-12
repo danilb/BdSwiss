@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             symbol.text = rate.symbol
-            price.text = rate.price.toString().dropLast(5)
+            price.text = rate.price.toString().dropLast(10)
 
             chart.data.getDataSetByIndex(index).addEntry(Entry(time, rate.price.toFloat()))
 
