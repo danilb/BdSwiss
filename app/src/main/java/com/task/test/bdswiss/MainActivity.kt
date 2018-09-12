@@ -94,8 +94,12 @@ class MainActivity : AppCompatActivity() {
             if (!price.text.isEmpty()) {
                 val prevPrice = price.text.toString().toDouble()
                 when (prevPrice < rate.price) {
-                    true -> { price.setBackgroundColor(Color.GREEN)}
-                    false -> { price.setBackgroundColor(Color.RED)}
+                    true -> {
+                        price.setBackgroundColor(Color.GREEN)
+                    }
+                    false -> {
+                        price.setBackgroundColor(Color.RED)
+                    }
                 }
             }
 
@@ -120,6 +124,11 @@ class MainActivity : AppCompatActivity() {
 
         for (i in 0 until rates.size) {
 
+            val color = Color.argb(255,
+                    rnd.nextInt(256),
+                    rnd.nextInt(256),
+                    rnd.nextInt(256))
+
             val rate = rates[i]
             val row = TableRow(this)
 
@@ -129,24 +138,25 @@ class MainActivity : AppCompatActivity() {
             symbol.gravity = Gravity.CENTER
             price.gravity = Gravity.CENTER
 
+            symbol.setTextColor(color)
             price.setBackgroundColor(Color.GRAY)
 
             row.addView(symbol)
             row.addView(price)
             rateTable.addView(row)
 
-            val entries= arrayListOf<Entry>()
+            val entries = arrayListOf<Entry>()
             entries.add(Entry(time, rate.price.toFloat()))
 
             val line = LineDataSet(entries, rate.symbol)
 
-            line.color =
-                    Color.argb(255,
-                            rnd.nextInt(256),
-                            rnd.nextInt(256),
-                            rnd.nextInt(256))
+            line.color = color
+            line.setCircleColor(color)
+            line.setDrawCircles(true)
+            line.setDrawValues(false)
 
             lines.add(line)
+
             chart.data = LineData(lines as List<ILineDataSet>?)
 
         }
